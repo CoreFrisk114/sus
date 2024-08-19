@@ -1,6 +1,5 @@
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-const cursor = document.getElementById('cursor');
 let painting = false;
 let erasing = false;
 let brushSize = 5;
@@ -19,8 +18,6 @@ document.getElementById('colorPicker').addEventListener('input', (e) => {
 
 document.getElementById('sizePicker').addEventListener('input', (e) => {
     brushSize = e.target.value;
-    cursor.style.width = `${brushSize}px`;
-    cursor.style.height = `${brushSize}px`;
 });
 
 document.getElementById('eraser').addEventListener('click', () => {
@@ -30,13 +27,11 @@ document.getElementById('eraser').addEventListener('click', () => {
 function startPosition(e) {
     painting = true;
     draw(e);
-    cursor.style.display = 'block';
 }
 
 function endPosition() {
     painting = false;
     ctx.beginPath();
-    cursor.style.display = 'none';
 }
 
 function draw(e) {
@@ -59,8 +54,11 @@ function draw(e) {
     ctx.beginPath();
     ctx.moveTo(x, y);
 
-    cursor.style.left = `${x - brushSize / 2}px`;
-    cursor.style.top = `${y - brushSize / 2}px`;
+    // 绘制边框
+    ctx.beginPath();
+    ctx.arc(x, y, brushSize / 2, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.closePath();
 }
 
 canvas.addEventListener('touchmove', (e) => {
