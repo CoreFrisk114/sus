@@ -4,6 +4,23 @@ let painting = false;
 let erasing = false;
 let brushSize = 5;
 
+// 加载画布内容
+window.onload = () => {
+    const savedCanvas = localStorage.getItem('canvas');
+    if (savedCanvas) {
+        const img = new Image();
+        img.src = savedCanvas;
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0);
+        };
+    }
+};
+
+// 实时保存画布内容
+setInterval(() => {
+    localStorage.setItem('canvas', canvas.toDataURL());
+}, 3000); // 每3秒保存一次
+
 canvas.addEventListener('mousedown', startPosition);
 canvas.addEventListener('mouseup', endPosition);
 canvas.addEventListener('mousemove', draw);
