@@ -5,20 +5,25 @@ let erasing = false;
 let brushSize = 5;
 
 // 加载画布内容
-window.onload = () => {
-    const savedCanvas = localStorage.getItem('canvas');
-    if (savedCanvas) {
+async function loadCanvas() {
+    const response = await fetch('https://your-cloudflare-worker-url');
+    const data = await response.text();
+    if (data) {
         const img = new Image();
-        img.src = savedCanvas;
+        img.src = data;
         img.onload = () => {
             ctx.drawImage(img, 0, 0);
         };
     }
-};
+}
 
 // 实时保存画布内容
-setInterval(() => {
-    localStorage.setItem('canvas', canvas.toDataURL());
+setInterval(async () => {
+    const data = canvas.toDataURL();
+    await fetch('https://your-cloudflare-worker-url', {
+        method: 'POST',
+        body: data
+    });
 }, 3000); // 每3秒保存一次
 
 canvas.addEventListener('mousedown', startPosition);
@@ -85,3 +90,6 @@ canvas.addEventListener('touchmove', (e) => {
     });
     canvas.dispatchEvent(mouseEvent);
 });
+
+// 加载画布内容
+loadCanvas();
