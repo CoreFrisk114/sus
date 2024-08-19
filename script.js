@@ -58,16 +58,6 @@ function draw(e) {
     ctx.stroke();
     ctx.beginPath();
     ctx.moveTo(x, y);
-
-    // 清除之前的红色边框
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // 绘制红色边框
-    ctx.beginPath();
-    ctx.arc(x, y, brushSize / 2, 0, Math.PI * 2);
-    ctx.strokeStyle = 'red';
-    ctx.stroke();
-    ctx.closePath();
 }
 
 canvas.addEventListener('touchmove', (e) => {
