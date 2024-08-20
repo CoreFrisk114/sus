@@ -79,7 +79,8 @@ function endPosition() {
 function draw(e) {
     if (!painting) return;
 
-    e.preventDefault();
+    e.preventDefault(); // 阻止默认行为
+
     const rect = canvas.getBoundingClientRect();
     const x = (e.clientX || e.touches[0].clientX) - rect.left;
     const y = (e.clientY || e.touches[0].clientY) - rect.top;
@@ -98,6 +99,7 @@ function draw(e) {
 }
 
 canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault(); // 阻止默认行为
     const touch = e.touches[0];
     const mouseEvent = new MouseEvent('mousemove', {
         clientX: touch.clientX,
