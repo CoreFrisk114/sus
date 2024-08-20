@@ -1,30 +1,45 @@
+import { initializeApp } from "firebase/app";
+import { getFirestore, doc, setDoc, onSnapshot } from "firebase/firestore";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCH1F3Eok4EquGc9nsBTmYAEwQ5Q1WUleE",
+  authDomain: "suus-36a06.firebaseapp.com",
+  projectId: "suus-36a06",
+  storageBucket: "suus-36a06.appspot.com",
+  messagingSenderId: "958013274025",
+  appId: "1:958013274025:web:c312fdfb523067168936b8",
+  measurementId: "G-2E3EP15ZQL"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 let painting = false;
 let erasing = false;
 let brushSize = 5;
 
-// 加载画布内容
 async function loadCanvas() {
-    const response = await fetch('https://your-cloudflare-worker-url');
-    const data = await response.text();
-    if (data) {
-        const img = new Image();
-        img.src = data;
-        img.onload = () => {
-            ctx.drawImage(img, 0, 0);
-        };
-    }
+    const docRef = doc(db, "canvas", "current");
+    onSnapshot(docRef, (doc) => {
+        if (doc.exists()) {
+            const data = doc.data().data;
+            const img = new Image();
+            img.src = data;
+            img.onload = () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+            };
+        }
+    });
 }
 
-// 实时保存画布内容
 setInterval(async () => {
     const data = canvas.toDataURL();
-    await fetch('https://your-cloudflare-worker-url', {
-        method: 'POST',
-        body: data
-    });
-}, 3000); // 每3秒保存一次
+    const docRef = doc(db, "canvas", "current");
+    await setDoc(docRef, { data });
+}, 3000);
 
 canvas.addEventListener('mousedown', startPosition);
 canvas.addEventListener('mouseup', endPosition);
@@ -91,5 +106,4 @@ canvas.addEventListener('touchmove', (e) => {
     canvas.dispatchEvent(mouseEvent);
 });
 
-// 加载画布内容
 loadCanvas();
