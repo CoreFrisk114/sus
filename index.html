@@ -1,47 +1,149 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>公共画布</title>
+    <title>粒子宇宙绘画</title>
     <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            font-family: Arial, sans-serif;
+        body { 
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+            touch-action: none;
         }
-        #canvas {
-            border: 1px solid black;
-            margin-top: 20px;
+        #controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            font-family: Arial;
         }
-        .tools {
-            display: flex;
-            justify-content: center;
-            margin-top: 10px;
-        }
-        .tools > * {
-            margin: 0 10px;
-        }
-        .note {
-            margin-top: 20px;
-            font-size: 14px;
-            color: #555;
+        .color-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin: 5px;
+            cursor: pointer;
+            border: 2px solid white;
         }
     </style>
 </head>
 <body>
-    <h1>1558637305</h1>
-    <canvas id="canvas" width="800" height="600"></canvas>
-    <div class="tools">
-        <label for="colorPicker">选择颜色:</label>
-        <input type="color" id="colorPicker">
-        <label for="sizePicker">画笔大小:</label>
-        <input type="range" id="sizePicker" min="1" max="50" value="5">
-        <button id="eraser">橡皮擦</button>
-        <button id="brush">画笔</button>
+    <div id="controls">
+        <div>画笔颜色 ▼</div>
+        <div class="color-btn" style="background:#FF3366" onclick="setColor('#FF3366')"></div>
+        <div class="color-btn" style="background:#33CCFF" onclick="setColor('#33CCFF')"></div>
+        <div class="color-btn" style="background:#FFEE33" onclick="setColor('#FFEE33')"></div>
+        <button onclick="clearCanvas()" style="margin-top:10px">清空画布</button>
     </div>
-    <div class="note">刷新网页以加载最新画布数据，每3秒自动保存一次画布数据☝🏻️🤓</div>
-    <script type="module" src="script.js"></script>
+    
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let currentColor = '#FF3366';
+        
+        // 初始化画布
+        function init() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // 粒子系统
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.size = Math.random() * 3 + 1;
+                this.speedX = (Math.random() - 0.5) * 2;
+                this.speedY = (Math.random() - 0.5) * 2;
+                this.alpha = 1;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.alpha -= 0.008;
+                if(this.alpha < 0) this.alpha = 0;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        let particles = [];
+        
+        // 绘制逻辑
+        function createParticles(x, y) {
+            for(let i = 0; i < 5; i++) {
+                particles.push(new Particle(x, y, currentColor));
+            }
+        }
+
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            particles.forEach((particle, index) => {
+                particle.update();
+                particle.draw();
+                if(particle.alpha <= 0) {
+                    particles.splice(index, 1);
+                }
+            });
+            requestAnimationFrame(animate);
+        }
+
+        // 交互事件
+        canvas.addEventListener('mousedown', () => isDrawing = true);
+        canvas.addEventListener('mouseup', () => isDrawing = false);
+        canvas.addEventListener('mousemove', (e) => {
+            if(isDrawing) createParticles(e.clientX, e.clientY);
+        });
+
+        // 移动端支持
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            isDrawing = true;
+        }, { passive: false });
+        canvas.addEventListener('touchend', () => isDrawing = false);
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if(isDrawing) {
+                const touch = e.touches[0];
+                createParticles(touch.clientX, touch.clientY);
+            }
+        }, { passive: false });
+
+        // 控制函数
+        function setColor(color) {
+            currentColor = color;
+        }
+
+        function clearCanvas() {
+            particles = [];
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // 初始化
+        init();
+        animate();
+        window.addEventListener('resize', init);
+    </script>
 </body>
 </html>
